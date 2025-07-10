@@ -1,0 +1,43 @@
+@AccountingServer_HostAddress = https://localhost:7098
+
+GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses
+
+###
+
+@DateFrom=2024-12-01
+@DateTo=2024-12-30
+GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses/betweenDates?DateFrom={{DateFrom}}&DateTo={{DateTo}}
+
+###
+
+@invNo=PI00000930
+GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses/{{invNo}}
+
+###
+
+GET {{AccountingServer_HostAddress}}/
+
+###
+
+GET {{AccountingServer_HostAddress}}/api/Vendors
+
+###
+
+POST {{AccountingServer_HostAddress}}/api/BankAccountLedgerItems
+Content-Type: application/json
+
+{
+    "Date": "2025-06-12",
+    "Tags": ["00010588253", "00010043333", "00018000262", "00010058708", "11210EUR", "11210GBP", "11210SEK", "11210USD", "11220EUR", "11220GBP", "11220SEK", "11220USD"]
+}
+
+###
+
+GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses
+
+###
+
+GET {{AccountingServer_HostAddress}}/api/BankAccountLedgerItems/?toDate=2025-03-02&accountId=12345
+
+
+###

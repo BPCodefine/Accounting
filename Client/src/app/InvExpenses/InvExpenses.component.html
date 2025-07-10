@@ -1,0 +1,67 @@
+<div class="dx-fieldset">
+  <div class="dx-field">
+    <div id="dateRangeBox" class="PostingDate">
+      <dx-date-range-box
+        [min]="minDate"
+        [startDate]="startDate"
+        [endDate]="endDate"
+        startDateLabel="Posting Date Start"
+        endDateLabel="End"
+        [(value)]="currentValue"
+        (onValueChanged)="onCurrentValueChanged($event)"
+        >
+      </dx-date-range-box>
+      <div>
+        <button (click)="applyFilters()">Apply date filter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="spinner">
+  Loading... Please wait
+</div>
+<div *ngIf="!loading">
+  <div #gridWrapper class="grid-wrapper">
+    <dx-data-grid id="InvExpensesDataGrid"
+        [dataSource]="invoices"
+        [allowColumnResizing]="true"
+        [columnAutoWidth]="false"
+        [allowColumnReordering]="true"
+        [showBorders]="true"
+        [columnHidingEnabled]="false"
+        [height]="gridHeight"
+        keyExpr="invoiceNo"
+        (onCellPrepared)="onCellPrepared($event)">
+
+        <dxo-scrolling
+          mode="infinite"
+          [useNative]="true"
+          showScrollbar="always">
+        </dxo-scrolling>
+        <dxo-filter-row [visible]="true"></dxo-filter-row>
+        <dxo-search-panel [visible]="true"></dxo-search-panel>
+        <dxo-selection mode="single"></dxo-selection>
+        <dxo-column-fixing [enabled]="true"></dxo-column-fixing>
+
+        <dxi-column dataField="invoiceNo" [fixed]="true" sortOrder="desc" caption="Invoice No" width="150"></dxi-column>
+        <dxi-column dataField="buyFromID" caption="Buy From ID" width="100" visible="false"></dxi-column>
+        <dxi-column dataField="buyFromName" caption="Buy From Name" width="200"></dxi-column>
+        <dxi-column dataField="yourRefOrderID" caption="Your Ref Order ID" width="100"></dxi-column>
+        <dxi-column dataField="postingDate" dataType="date" caption="Posting Date" width="100"></dxi-column>
+        <dxi-column dataField="invLineNo" caption="Invoice Line No" width="80"></dxi-column>
+        <dxi-column dataField="articleNo" caption="Article No" width="150"></dxi-column>
+        <dxi-column dataField="articleName" caption="Article Name" width="200"></dxi-column>
+        <dxi-column dataField="invoicedQty" dataType="number" caption="Qty" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="puaCost" dataType="number" caption="PUA Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="seafreightCost" dataType="number" caption="Seafreight Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="dutyCost" dataType="number" caption="Duty Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="storageCost" dataType="number" caption="Storage Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="outfreightCost" dataType="number" caption="Outfreight Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="inlandFreightCost" dataType="number" caption="Inland Freight Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="smallCost" dataType="number" caption="Small Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="uVYarnCost" dataType="number" caption="UV Yarn Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+        <dxi-column dataField="qualDiscountCost" dataType="number" caption="Qual Discount Cost" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+    </dx-data-grid>
+  </div>
+</div>

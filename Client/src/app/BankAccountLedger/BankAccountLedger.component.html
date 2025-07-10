@@ -1,0 +1,75 @@
+<div class="dx-fieldset">
+  <div class="dx-field">
+    <div class="PostingDate">
+      <dx-date-box
+        [showClearButton]="true"
+        [inputAttr]="{ 'aria-label': 'Posting Date' }"
+        label="Posting Date"
+        labelMode="floating"
+        placeholder="Choose date"
+        displayFormat="yyyy/MM/dd"
+        type="date"
+        [(value)]="endDate"
+        (onValueChanged)="FetchLedgerLines()">
+      </dx-date-box>
+
+      <div id="AccountList" class="AccountList">
+        <dx-text-box
+          [showClearButton]="true"
+          [inputAttr]="{ 'aria-label': 'Account' }"
+          label="Extra Accounts"
+          labelMode="floating"
+          placeholder=""
+          [(value)]="accountsText"
+          (onValueChanged)="accListValueChanged($event)">
+        </dx-text-box>
+      </div>
+      <div>
+        <button
+          type="button"
+          (click)="FetchLedgerLines()">
+          Apply filters
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="spinner">
+  Loading... Please wait
+</div>
+<div *ngIf="!loading">
+  <div #gridWrapper class="grid-wrapper">
+    <dx-data-grid id="BankAccountLedgerDataGrid"
+      [dataSource]="ledgerLines"
+      [allowColumnResizing]="true"
+      [columnAutoWidth]="false"
+      [allowColumnReordering]="true"
+      [hoverStateEnabled]="true"
+      [height]="gridHeight"
+      keyExpr="entryNo"
+      (onExporting)="onExporting($event)"
+      >
+      <dxo-scrolling mode="infinite"></dxo-scrolling>
+      <dxo-filter-row [visible]="true"></dxo-filter-row>
+      <dxo-search-panel [visible]="true"></dxo-search-panel>
+      <dxo-selection mode="single"></dxo-selection>
+      <dxo-export [enabled]="true" [formats]="['xlsx']"></dxo-export>
+
+      <dxi-column dataField="entryNo" caption="EntryNo" width="80"></dxi-column>
+      <dxi-column dataField="documentNo" caption="DocumentNo" width="100"></dxi-column>
+      <dxi-column dataField="bankAccountNo" caption="BankAccountNo" width="100"></dxi-column>
+      <dxi-column dataField="description" caption="Description" width="200"></dxi-column>
+      <dxi-column dataField="postingDate" dataType="date" sortOrder="desc" caption="Posting Date" width="100" format="yyyy/MM/dd"></dxi-column>
+      <dxi-column dataField="currencyCode" caption="CurrencyCode" width="50"></dxi-column>
+      <dxi-column dataField="amount" dataType="number" caption="Amount" width="100" format=",##0.00"></dxi-column>
+      <dxi-column dataField="remainingAmount" dataType="number" caption="RemainingAmount" width="100" format=",##0.00"></dxi-column>
+      <dxi-column dataField="amountLCY" dataType="number" caption="Amount (LCY)" width="100" format=",##0.00"></dxi-column>
+      <dxi-column dataField="open" caption="Open" width="60"></dxi-column>
+      <dxi-column dataField="debitAmount" dataType="number" caption="Debit" width="100" format=",##0.00"></dxi-column>
+      <dxi-column dataField="creditAmount" dataType="number" caption="Credit" width="100" format=",##0.00"></dxi-column>
+      <dxi-column dataField="runningTotalAmount" dataType="number" caption="Running Total" width="100" format=",##0.00"></dxi-column>
+      <dxi-column dataField="runningTotalAmountLCY" dataType="number" caption="Running Total (LCY)" width="100" format=",##0.00"></dxi-column>
+    </dx-data-grid>
+  </div>
+</div>

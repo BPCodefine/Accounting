@@ -1,0 +1,14 @@
+# Node (Client)
+node_modules/
+dist/
+
+# .NET (Server)
+bin/
+obj/
+*.user
+*.suo
+
+# General
+.DS_Store
+Thumbs.db
+.env

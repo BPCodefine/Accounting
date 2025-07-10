@@ -1,0 +1,35 @@
+.PostingDate {
+    width: 300px;
+}
+.dx-fieldset {
+  position: fixed;
+  top: 25px; /* Distance from top of viewport */
+  left: 180px;
+  z-index: 10; /* Make sure it stays above other content */
+}
+
+.grid-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  min-width: max-content;
+  margin-top: 25px;
+  height: calc(100vh - 120px); /* Full height minus the top offset */
+}
+
+.spinner {
+  position: fixed; /* So it’s relative to the viewport */
+  top: 200px;
+  left: 400px;
+  z-index: 9999; /* Way above all other layers */
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
