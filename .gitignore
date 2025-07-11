@@ -5,6 +5,7 @@ dist/
 # .NET (Server)
 bin/
 obj/
+.vs/
 *.user
 *.suo
 

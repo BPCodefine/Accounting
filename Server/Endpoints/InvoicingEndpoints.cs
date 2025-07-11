@@ -1,8 +1,6 @@
 ﻿using AccountingServer.DBAccess;
 using AccountingServer.Entities;
 using Dapper;
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Principal;
 using System.Text;
 
 namespace AccountingServer.Endpoints
@@ -17,9 +15,15 @@ namespace AccountingServer.Endpoints
         public DateTime ToDate { get; set; }
         public string? ExtraAccList { get; set; }
     }
+
+    public class CustInvQuery
+    {
+        public string Company { get; set; } = string.Empty;
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+    }
     public static class InvoicingEndpoints
     {
-        public record ItemFilter(DateTime Date, List<string> Tags);
         public static void MapInvoicingEndpoints(this IEndpointRouteBuilder app)
         {
             const string sqlPurchInvoicesAndExpenses = @"
@@ -208,6 +212,157 @@ order by
                     return Results.Problem(context.connString + "; " + ex.Message, statusCode: 500);
                 }
                 
+            }
+            );
+
+            app.MapGet("/api/CustomerInvoices", async (DynamicsDBContext context, [AsParameters] CustInvQuery query) =>
+            {
+                using var conn = context.Create();
+
+                string DefCurSQL = $"select [LCY Code] from [{query.Company}$General Ledger Setup$437dbf0e-84ff-417a-965d-ed2bb9650972]"; 
+                string? DefCur = conn.ExecuteScalar<string>(DefCurSQL);
+                if (DefCur == null)
+                {
+                    return Results.Problem($"Default currency for {query.Company} could not be retrieved.", statusCode: 500);
+                }
+
+                StringBuilder sql = new(@"
+select
+    cle.[Document No_] as InvoiceNo,
+    cle.[Customer No_] as CustomerNo,
+    cust.[Name] as CustomerName,
+    cast(cle.[Posting Date] as Date) as InvoiceDate,
+    cle.[Description],
+    cast(cle.[Due Date] as Date) as DueDate,
+    (select SUM(Amount) from [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+     where [Entry Type] = 1
+            and [Cust_ Ledger Entry No_] = cle.[Entry No_] 
+            and [Posting Date] = cle.[Posting Date]) as Amount,
+    case cle.[Currency Code]    
+        when '' then {DefCur} 
+        else cle.[Currency Code]
+    end As Cur,
+    (select SUM([Amount (LCY)]) from [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972]
+     where [Entry Type] = 1
+        and [Cust_ Ledger Entry No_] = cle.[Entry No_]
+        and [Posting Date] = cle.[Posting Date]) as AmountLCY,
+    cast(ClosedBy.[Posting Date] as Date) as PaymentDate,
+    ClosedBy.[Document No_] as PaymentDocNo
+from 
+    [dbo].[{Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] cle
+    left join [dbo].[{Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] ClosedBy 
+        on ClosedBy.[Entry No_] = cle.[Closed by Entry No_]
+    inner join [{Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] cust on cle.[Customer No_] = cust.[No_]
+where
+    cle.[Posting Date] BETWEEN '{FromDate}' AND '{ToDate}'
+    AND cle.[Document Type] = 2");
+
+                sql.Replace("{Company}", query.Company);
+                sql.Replace("{DefCur}", $"'{DefCur}'");
+                sql.Replace("{FromDate}", query.FromDate.ToString("yyyy-MM-dd"));
+                sql.Replace("{ToDate}", query.ToDate.ToString("yyyy-MM-dd"));
+
+                var lines = await conn.QueryAsync<CustomerInvoices>(sql.ToString());
+                return Results.Ok(lines);
+            }
+            );
+
+            app.MapGet("/api/LateCustomerInvoices", async (DynamicsDBContext context, string Company) =>
+            {
+                using var conn = context.Create();
+
+                string DefCurSQL = $"select [LCY Code] from [{Company}$General Ledger Setup$437dbf0e-84ff-417a-965d-ed2bb9650972]";
+                string? DefCur = conn.ExecuteScalar<string>(DefCurSQL);
+                if (DefCur == null)
+                {
+                    return Results.Problem($"Default currency for {Company} could not be retrieved.", statusCode: 500);
+                }
+
+                StringBuilder sql = new(@"
+select
+	cle.[Document No_] as InvoiceNo,
+	cle.[Customer No_] as CustomerNo,
+	cust.[Name] as CustomerName,
+	cast(cle.[Posting Date] as Date) as InvoiceDate,
+	cle.[Description],
+	cast(cle.[Due Date] as Date) as DueDate,
+	(select SUM(Amount) from [cdf$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	                    where [Entry Type] = 1 
+						and [Cust_ Ledger Entry No_] = cle.[Entry No_] 
+						and [Posting Date] = cle.[Posting Date]) as Amount,
+	CASE cle.[Currency Code] 
+	    WHEN '' THEN {DefCur}
+		ELSE cle.[Currency Code]
+	END As Cur,
+	(select SUM([Amount (LCY)]) from [cdf$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	                            where [Entry Type] = 1
+								and [Cust_ Ledger Entry No_] = cle.[Entry No_]
+								and [Posting Date] = cle.[Posting Date]) as AmountLCY,
+    DATEDIFF(DAY, cle.[Due Date], GETDATE()) as LateDays
+from
+	[cdf$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] cle
+	inner join [CDF$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] cust on cle.[Customer No_] = cust.[No_]
+where 
+	[Open] = 1
+	and (cle.[Document Type] = 2 OR cle.[Document Type] = 3)");
+
+                sql.Replace("{Company}", Company);
+                sql.Replace("{DefCur}", $"'{DefCur}'");
+
+                var lines = await conn.QueryAsync<CustomerInvoices>(sql.ToString());
+                return Results.Ok(lines);
+            }
+            );
+
+            app.MapGet("/api/VendorInvoices", async (DynamicsDBContext context, [AsParameters] CustInvQuery query) =>
+            {
+                using var conn = context.Create();
+
+                string DefCurSQL = $"select [LCY Code] from [{query.Company}$General Ledger Setup$437dbf0e-84ff-417a-965d-ed2bb9650972]";
+                string? DefCur = conn.ExecuteScalar<string>(DefCurSQL);
+                if (DefCur == null)
+                {
+                    return Results.Problem($"Default currency for {query.Company} could not be retrieved.", statusCode: 500);
+                }
+
+                StringBuilder sql = new(@"
+select
+	vle.[Document No_] as InvoiceNo,
+	vle.[Vendor No_] as VendorNo,
+	vendor.[Name] as VendorName,
+	cast(vle.[Posting Date] as Date) as InvoiceDate,
+	vle.[Description],
+	cast(vle.[Due Date] as Date) as DueDate,
+	vle.[External Document No_] as ExtInvNo,
+	(select SUM(-1 * Amount) from [{Company}$Detailed Vendor Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	                    where [Ledger Entry Amount] = 1 
+						      and [Vendor Ledger Entry No_] = vle.[Entry No_] 
+						      and [Posting Date] = vle.[Posting Date]) as Amount,
+	CASE vle.[Currency Code] 
+		WHEN '' THEN {DefCur} 
+		ELSE vle.[Currency Code]
+	END As Cur,
+	(select SUM(-1 * [Amount (LCY)]) from [{Company}$Detailed Vendor Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	                    where [Ledger Entry Amount] = 1 
+						      and [Vendor Ledger Entry No_] = vle.[Entry No_] 
+						      and [Posting Date] = vle.[Posting Date]) as AmountLCY,
+	cast(ClosedBy.[Posting Date] as Date) as PaymentDate,
+	ClosedBy.[Document No_] as PaymentDocNo
+from 
+	[dbo].[{Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] vle
+	left join [dbo].[{Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] ClosedBy on ClosedBy.[Entry No_] = vle.[Closed by Entry No_]
+	inner join [dbo].[{Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] vendor on vle.[Vendor No_] = vendor.[No_]
+where 
+	(vle.[Document Type] = 2 OR vle.[Document Type] = 3)
+    AND vle.[Posting Date] BETWEEN '{FromDate}' AND '{ToDate}'");
+
+                sql.Replace("{Company}", query.Company);
+                sql.Replace("{DefCur}", $"'{DefCur}'");
+                sql.Replace("{FromDate}", query.FromDate.ToString("yyyy-MM-dd"));
+                sql.Replace("{ToDate}", query.ToDate.ToString("yyyy-MM-dd"));
+
+                var lines = await conn.QueryAsync<VendorInvoices>(sql.ToString());
+                return Results.Ok(lines);
             }
             );
         }
