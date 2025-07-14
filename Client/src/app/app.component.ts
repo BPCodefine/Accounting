@@ -28,6 +28,7 @@ export class AppComponent {
   menuItems: any[] = [
     { icon: 'home', label: 'Home', route: 'home' },
     { icon: 'assignment', label: 'InvExpenses', route: 'InvExpenses' },
-    { icon: 'account_balance', label: 'BankAccountLedger', route: 'BankAccountLedger' }
+    { icon: 'account_balance', label: 'BankAccountLedger', route: 'BankAccountLedger' },
+    { icon: 'receipt_long', label: 'CustInvoices', route: 'CustomerInvoices' }
   ];
 }

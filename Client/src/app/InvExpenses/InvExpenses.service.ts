@@ -7,7 +7,7 @@ import { environment } from '@env/environment';
 @Injectable({
   providedIn: 'root',
 })
-export class InvoiceService {
+export class InvExpensesService {
   private apiUrl = environment.apiUrl + '/api/PurchInvAndExpenses';
 
   constructor(private httpClient: HttpClient) {}
