@@ -317,7 +317,7 @@ where
                     return Results.Problem($"Default currency for {query.Company} could not be retrieved.", statusCode: 500);
                 }
 
-                StringBuilder sql = new(@"
+                StringBuilder sql = new($@"
 select
 	vle.[Document No_] as InvoiceNo,
 	vle.[Vendor No_] as VendorNo,
@@ -326,32 +326,27 @@ select
 	vle.[Description],
 	cast(vle.[Due Date] as Date) as DueDate,
 	vle.[External Document No_] as ExtInvNo,
-	(select SUM(-1 * Amount) from [{Company}$Detailed Vendor Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	(select SUM(-1 * Amount) from [{query.Company}$Detailed Vendor Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
 	                    where [Ledger Entry Amount] = 1 
 						      and [Vendor Ledger Entry No_] = vle.[Entry No_] 
 						      and [Posting Date] = vle.[Posting Date]) as Amount,
 	CASE vle.[Currency Code] 
-		WHEN '' THEN {DefCur} 
+		WHEN '' THEN '{DefCur}' 
 		ELSE vle.[Currency Code]
 	END As Cur,
-	(select SUM(-1 * [Amount (LCY)]) from [{Company}$Detailed Vendor Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	(select SUM(-1 * [Amount (LCY)]) from [{query.Company}$Detailed Vendor Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
 	                    where [Ledger Entry Amount] = 1 
 						      and [Vendor Ledger Entry No_] = vle.[Entry No_] 
 						      and [Posting Date] = vle.[Posting Date]) as AmountLCY,
 	cast(ClosedBy.[Posting Date] as Date) as PaymentDate,
 	ClosedBy.[Document No_] as PaymentDocNo
 from 
-	[dbo].[{Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] vle
-	left join [dbo].[{Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] ClosedBy on ClosedBy.[Entry No_] = vle.[Closed by Entry No_]
-	inner join [dbo].[{Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] vendor on vle.[Vendor No_] = vendor.[No_]
+	[dbo].[{query.Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] vle
+	left join [dbo].[{query.Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] ClosedBy on ClosedBy.[Entry No_] = vle.[Closed by Entry No_]
+	inner join [dbo].[{query.Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] vendor on vle.[Vendor No_] = vendor.[No_]
 where 
 	(vle.[Document Type] = 2 OR vle.[Document Type] = 3)
-    AND vle.[Posting Date] BETWEEN '{FromDate}' AND '{ToDate}'");
-
-                sql.Replace("{Company}", query.Company);
-                sql.Replace("{DefCur}", $"'{DefCur}'");
-                sql.Replace("{FromDate}", query.FromDate.ToString("yyyy-MM-dd"));
-                sql.Replace("{ToDate}", query.ToDate.ToString("yyyy-MM-dd"));
+    AND vle.[Posting Date] BETWEEN '{query.FromDate:yyyy-MM-dd}' AND '{query.ToDate:yyyy-MM-dd}'");
 
                 var lines = await conn.QueryAsync<VendorInvoices>(sql.ToString());
                 return Results.Ok(lines);

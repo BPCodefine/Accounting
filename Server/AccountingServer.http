@@ -32,17 +32,17 @@ GET {{AccountingServer_HostAddress}}/api/BankAccountLedgerItems/?toDate=2025-03-
 ###
 @FromDate=2024-12-01
 @ToDate=2024-12-30
-@Company=cdf
+@Company=JMJ
 GET {{AccountingServer_HostAddress}}/api/CustomerInvoices?FromDate={{FromDate}}&ToDate={{ToDate}}&Company={{Company}}
 
 ###
 @FromDate=2024-12-01
 @ToDate=2024-12-30
-@Company=cdf
+@Company=CDF
 GET {{AccountingServer_HostAddress}}/api/VendorInvoices?FromDate={{FromDate}}&ToDate={{ToDate}}&Company={{Company}}
 
 ###
-@Company=cdf
+@Company=CDF
 GET {{AccountingServer_HostAddress}}/api/LateCustomerInvoices?Company={{Company}}
 
 ###
