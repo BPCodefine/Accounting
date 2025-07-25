@@ -167,7 +167,7 @@ from
 
             app.MapGet("/api/BankAccountLedgerItems", async (DynamicsDBContext context, [AsParameters] LedgerQuery query) =>
             {
-                const string sqlBankAccountLedgerEntries = @"
+                string sqlBankAccountLedgerEntries = $@"
 select
 	[Entry No_] as EntryNo, 
 	[Document Type] as DocumentType,
@@ -191,7 +191,7 @@ from
 	[TRANSPACNAV21].[dbo].[CDF$Bank Account Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972]
 where
 	[Bank Account No_] in ('00010588253', '00010043333', '00018000262', '00010058708', '11210EUR', '11210GBP', '11210SEK', '11210USD', '11220EUR', '11220GBP', '11220SEK', '11220USD' @MoreAccntList)
-    AND [Posting Date] <= '@toDate'
+    AND [Posting Date] <= '{query.ToDate:yyyy-MM-dd}'
 order by
     [Posting Date] Desc
 ";
@@ -200,7 +200,7 @@ order by
                     using var conn = context.Create();
                     string sql = "";
                     if (query.ExtraAccList == null || query.ExtraAccList.Length == 0)
-                        sql = sqlBankAccountLedgerEntries.Replace("@toDate", query.ToDate.ToString("yyyy/MM/dd")).Replace("@MoreAccntList", "");
+                        sql = sqlBankAccountLedgerEntries.Replace("@MoreAccntList", "");
                     else
                         sql = sqlBankAccountLedgerEntries.Replace("@toDate", query.ToDate.ToString("yyyy/MM/dd")).Replace("@MoreAccntList", ", " + query.ExtraAccList);
                     var lines = await conn.QueryAsync<BankAccountLedgerEntries>(sql);
@@ -226,7 +226,7 @@ order by
                     return Results.Problem($"Default currency for {query.Company} could not be retrieved.", statusCode: 500);
                 }
 
-                StringBuilder sql = new(@"
+                StringBuilder sql = new($@"
 select
     cle.[Document No_] as InvoiceNo,
     cle.[Customer No_] as CustomerNo,
@@ -234,33 +234,28 @@ select
     cast(cle.[Posting Date] as Date) as InvoiceDate,
     cle.[Description],
     cast(cle.[Due Date] as Date) as DueDate,
-    (select SUM(Amount) from [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+    (select SUM(Amount) from [{query.Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
      where [Entry Type] = 1
             and [Cust_ Ledger Entry No_] = cle.[Entry No_] 
             and [Posting Date] = cle.[Posting Date]) as Amount,
     case cle.[Currency Code]    
-        when '' then {DefCur} 
+        when '' then '{DefCur}'
         else cle.[Currency Code]
     end As Cur,
-    (select SUM([Amount (LCY)]) from [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972]
+    (select SUM([Amount (LCY)]) from [{query.Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972]
      where [Entry Type] = 1
         and [Cust_ Ledger Entry No_] = cle.[Entry No_]
         and [Posting Date] = cle.[Posting Date]) as AmountLCY,
     cast(ClosedBy.[Posting Date] as Date) as PaymentDate,
     ClosedBy.[Document No_] as PaymentDocNo
 from 
-    [dbo].[{Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] cle
-    left join [dbo].[{Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] ClosedBy 
+    [dbo].[{query.Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] cle
+    left join [dbo].[{query.Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] ClosedBy 
         on ClosedBy.[Entry No_] = cle.[Closed by Entry No_]
-    inner join [{Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] cust on cle.[Customer No_] = cust.[No_]
+    inner join [{query.Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] cust on cle.[Customer No_] = cust.[No_]
 where
-    cle.[Posting Date] BETWEEN '{FromDate}' AND '{ToDate}'
+    cle.[Posting Date] BETWEEN '{query.FromDate:yyyy-MM-dd}' AND '{query.ToDate:yyyy-MM-dd}'
     AND cle.[Document Type] = 2");
-
-                sql.Replace("{Company}", query.Company);
-                sql.Replace("{DefCur}", $"'{DefCur}'");
-                sql.Replace("{FromDate}", query.FromDate.ToString("yyyy-MM-dd"));
-                sql.Replace("{ToDate}", query.ToDate.ToString("yyyy-MM-dd"));
 
                 var lines = await conn.QueryAsync<CustomerInvoices>(sql.ToString());
                 return Results.Ok(lines);
@@ -278,7 +273,7 @@ where
                     return Results.Problem($"Default currency for {Company} could not be retrieved.", statusCode: 500);
                 }
 
-                StringBuilder sql = new(@"
+                StringBuilder sql = new($@"
 select
 	cle.[Document No_] as InvoiceNo,
 	cle.[Customer No_] as CustomerNo,
@@ -286,28 +281,25 @@ select
 	cast(cle.[Posting Date] as Date) as InvoiceDate,
 	cle.[Description],
 	cast(cle.[Due Date] as Date) as DueDate,
-	(select SUM(Amount) from [cdf$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	(select SUM(Amount) from [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
 	                    where [Entry Type] = 1 
 						and [Cust_ Ledger Entry No_] = cle.[Entry No_] 
 						and [Posting Date] = cle.[Posting Date]) as Amount,
 	CASE cle.[Currency Code] 
-	    WHEN '' THEN {DefCur}
+	    WHEN '' THEN '{DefCur}'
 		ELSE cle.[Currency Code]
 	END As Cur,
-	(select SUM([Amount (LCY)]) from [cdf$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
+	(select SUM([Amount (LCY)]) from [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] 
 	                            where [Entry Type] = 1
 								and [Cust_ Ledger Entry No_] = cle.[Entry No_]
 								and [Posting Date] = cle.[Posting Date]) as AmountLCY,
     DATEDIFF(DAY, cle.[Due Date], GETDATE()) as LateDays
 from
-	[cdf$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] cle
-	inner join [CDF$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] cust on cle.[Customer No_] = cust.[No_]
+	[{Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] cle
+	inner join [{Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] cust on cle.[Customer No_] = cust.[No_]
 where 
 	[Open] = 1
 	and (cle.[Document Type] = 2 OR cle.[Document Type] = 3)");
-
-                sql.Replace("{Company}", Company);
-                sql.Replace("{DefCur}", $"'{DefCur}'");
 
                 var lines = await conn.QueryAsync<CustomerInvoices>(sql.ToString());
                 return Results.Ok(lines);
