@@ -5,8 +5,8 @@ import { AfterViewInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angula
 import { DxDateRangeBoxModule, DxDataGridModule } from 'devextreme-angular';
 import { DxDateRangeBoxTypes } from "devextreme-angular/ui/date-range-box"
 
-import { InvExpensesModel } from 'app/InvExpenses/InvExpenses.model';
-import { InvoiceService } from './InvExpenses.service';
+import { InvExpensesModel } from './InvExpenses.model';
+import { InvExpensesService } from './InvExpenses.service';
 
 @Component({
   selector: 'app-inv-expenses-dev-express',
@@ -29,7 +29,7 @@ export class InvExpensesComponent implements OnInit, AfterViewInit {
 
   @ViewChild('gridWrapper') gridWrapperRef!: ElementRef;
 
-  constructor(private invoiceService: InvoiceService, private cdr: ChangeDetectorRef) {}
+  constructor(private invExpService: InvExpensesService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.FetchInvoices();
@@ -53,7 +53,7 @@ export class InvExpensesComponent implements OnInit, AfterViewInit {
 
   FetchInvoices() {
     this.loading = true;
-    this.invoiceService.getInvoices(this.startDate, this.endDate).subscribe({
+    this.invExpService.getInvoices(this.startDate, this.endDate).subscribe({
       next: (data) => {
         this.invoices = data;
         this.loading = false;
