@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { HomeComponent } from './Home/home.component';
 import { InvExpensesComponent } from './InvExpenses/InvExpenses.component';
 import { BankAccountLedgerComponent } from './BankAccountLedger/BankAccountLedger.component';
-import { CustomerInvoicesComponent } from './CustomerInvoices/CustomerInvoices';
+import { CustomerInvoicesComponent } from './CustomerInvoices/CustomerInvoices.component';
 
 export const routes: Routes = [
     { path: '', pathMatch: 'full', redirectTo: 'home' },
