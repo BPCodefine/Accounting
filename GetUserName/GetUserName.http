@@ -1,0 +1,9 @@
+﻿@GetUserName_HostAddress = https://localhost:7295
+
+GET {{GetUserName_HostAddress}}/
+
+###
+
+GET {{GetUserName_HostAddress}}/api/username
+
+###

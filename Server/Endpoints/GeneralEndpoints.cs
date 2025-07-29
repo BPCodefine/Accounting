@@ -11,24 +11,10 @@ namespace AccountingServer.Endpoints
         {
             app.MapGet("/", () => "Hello World!");
 
-            app.MapGet("/username", (HttpContext context) =>
+            app.MapGet("/api/username", (HttpContext context) =>
             {
-                if (OperatingSystem.IsWindows())
-                {
-                    // Retrieve the Windows identity from the current user
-                    if (context.User.Identity is WindowsIdentity windowsIdentity)
-                    {
-                        return Results.Ok(windowsIdentity.Name); // Returns the SSPI context user name
-                    }
-                    else
-                    {
-                        return Results.Ok("Error getting Windows Identity");
-                    }
-                }
-                else
-                {
-                    return Results.Problem("WindowsIdentity.Name is only supported on Windows platforms.", statusCode: 500);
-                }
+                var username = context.User.Identity?.Name; // e.g., DOMAIN\username
+                return Results.Ok(new { username });
             });
 
             const string sqlVendors = @"

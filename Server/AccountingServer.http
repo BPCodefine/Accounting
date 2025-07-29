@@ -47,3 +47,7 @@ GET {{AccountingServer_HostAddress}}/api/VendorInvoices?FromDate={{FromDate}}&To
 GET {{AccountingServer_HostAddress}}/api/LateCustomerInvoices?Company={{Company}}
 
 ###
+
+GET {{AccountingServer_HostAddress}}/username
+
+###

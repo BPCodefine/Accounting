@@ -1,6 +1,6 @@
-using System.Runtime.Versioning;
 using AccountingServer.DBAccess;
 using AccountingServer.Endpoints;
+using Microsoft.AspNetCore.Server.IISIntegration;
 
 var builder = WebApplication.CreateBuilder(args);
 
