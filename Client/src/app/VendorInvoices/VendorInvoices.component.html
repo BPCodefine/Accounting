@@ -1,0 +1,67 @@
+<div class="dx-fieldset">
+  <div class="header-container">
+    <h2 class="page-header">Vendor Invoices</h2>
+    <div class="dx-field">
+      <div class="filter-container">
+        <dx-date-range-box
+          [min]="minDate"
+          [startDate]="startDate"
+          [endDate]="endDate"
+          startDateLabel="Posting Date Start"
+          endDateLabel="End"
+          [(value)]="currentValue"
+          (onValueChanged)="onCurrentValueChanged($event)">
+        </dx-date-range-box>
+
+        <dx-check-box
+          class="showUnpaid"
+          [(value)]="showUnpaid"
+          text="Show only unpaid invoices"
+          (onValueChanged)="FetchInvoices()">
+        </dx-check-box>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="spinner">
+  Loading... Please wait
+</div>
+<div *ngIf="!loading">
+  <div #gridWrapper class="grid-wrapper">
+    <dx-data-grid id="CustInvoicesDataGrid"
+      [dataSource]="invoices"
+      [allowColumnResizing]="true"
+      [columnAutoWidth]="false"
+      [allowColumnReordering]="true"
+      [showBorders]="true"
+      [height]="gridHeight"
+      [columnHidingEnabled]="false"
+      keyExpr="invoiceNo">
+
+      <dxo-scrolling
+        mode="infinite"
+        [useNative]="true"
+        showScrollbar="always">
+      </dxo-scrolling>
+      <dxo-filter-row [visible]="true"></dxo-filter-row>
+      <dxo-search-panel [visible]="true"></dxo-search-panel>
+      <dxo-selection mode="single"></dxo-selection>
+      <dxo-column-fixing [enabled]="true"></dxo-column-fixing>
+
+      <dxi-column dataField="invoiceNo" [fixed]="true" sortOrder="desc" caption="Invoice No" width="150"></dxi-column>
+      <dxi-column dataField="vendorName" caption="Vendor" width="200"></dxi-column>
+      <dxi-column dataField="description" caption="Descr" width="200"></dxi-column>
+      <dxi-column dataField="extInvNo" caption="ExtInvNo" width="150"></dxi-column>
+      <dxi-column dataField="invoiceDate" dataType="date" caption="InvDate" width="100"></dxi-column>
+      <dxi-column dataField="dueDate" dataType="date" caption="DueDate" width="100"></dxi-column>
+      <dxi-column dataField="amount" dataType="number" caption="Amount" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+      <dxi-column dataField="cur" caption="Cur" width="70"></dxi-column>
+      <dxi-column dataField="amountLCY" dataType="number" caption="Amount(LCY)" width="80"><dxo-format type="fixedPoint" precision="2"></dxo-format></dxi-column>
+      <dxi-column dataField="paymentDate"  dataType="date" caption="PaymentDate" width="100"></dxi-column>
+      <dxi-column dataField="paymentDocNo" caption="PaymentDocNo" width="100"></dxi-column>
+    </dx-data-grid>
+  </div>
+</div>
+
+

@@ -79,11 +79,6 @@ export class InvExpensesComponent implements OnInit, AfterViewInit {
     }
   }
 
-  applyFilters() {
-    //console.log('Filters applied');
-    this.FetchInvoices();
-  }
-
   calculateGridHeight() {
     this.gridHeight = window.innerHeight - 120;
     this.cdr.detectChanges();

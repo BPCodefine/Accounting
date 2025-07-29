@@ -1,18 +1,24 @@
 <div class="dx-fieldset">
-  <div class="dx-field">
-    <div id="dateRangeBox" class="PostingDate">
-      <dx-date-range-box
-        [min]="minDate"
-        [startDate]="startDate"
-        [endDate]="endDate"
-        startDateLabel="Posting Date Start"
-        endDateLabel="End"
-        [(value)]="currentValue"
-        (onValueChanged)="onCurrentValueChanged($event)"
-        >
-      </dx-date-range-box>
-      <div>
-        <button (click)="FetchInvoices()">Apply filters</button>
+  <div class="header-container">
+    <h2 class="page-header">Customer Invoices</h2>
+    <div class="dx-field">
+      <div class="filter-container">
+        <dx-date-range-box
+          [min]="minDate"
+          [startDate]="startDate"
+          [endDate]="endDate"
+          startDateLabel="Posting Date Start"
+          endDateLabel="End"
+          [(value)]="currentValue"
+          (onValueChanged)="onCurrentValueChanged($event)">
+        </dx-date-range-box>
+
+        <dx-check-box
+          class="showOverdue"
+          [(value)]="showOverdue"
+          text="Show only overdue invoices"
+          (onValueChanged)="FetchInvoices()">
+        </dx-check-box>
       </div>
     </div>
   </div>
@@ -44,7 +50,6 @@
       <dxo-column-fixing [enabled]="true"></dxo-column-fixing>
 
       <dxi-column dataField="invoiceNo" [fixed]="true" sortOrder="desc" caption="Invoice No" width="150"></dxi-column>
-      <dxi-column dataField="customerNo" caption="customerNo" width="100" visible="false"></dxi-column>
       <dxi-column dataField="customerName" caption="Customer" width="200"></dxi-column>
       <dxi-column dataField="description" caption="Descr" width="200"></dxi-column>
       <dxi-column dataField="invoiceDate" dataType="date" caption="InvDate" width="100"></dxi-column>

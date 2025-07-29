@@ -1,1 +1,10 @@
+.toolbar-logo-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
+.company-logo {
+  height: 32px;
+  width: auto;
+}

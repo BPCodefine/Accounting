@@ -1,3 +1,22 @@
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.filter-button {
+  white-space: nowrap;
+  margin-top: 8px;
+}
+
 .PostingDate {
     width: 300px;
 }

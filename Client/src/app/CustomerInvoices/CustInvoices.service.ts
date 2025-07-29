@@ -17,6 +17,6 @@ export class CustInvoiceService {
     }
 
   getLateCustInvoices(Company: string): Observable<CustInvoices[]> {
-    return this.httpClient.get<CustInvoices[]>(environment.apiUrl + '/api/LateCustomerInvoices' + `?FromDate=${Company}`);
+    return this.httpClient.get<CustInvoices[]>(environment.apiUrl + '/api/LateCustomerInvoices' + `?Company=${Company}`);
   }
 }

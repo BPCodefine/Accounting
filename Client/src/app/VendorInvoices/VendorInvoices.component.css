@@ -5,6 +5,13 @@
   flex-wrap: wrap;
   gap: 1rem;
 }
+
+.dx-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .filter-container {
   display: flex;
   align-items: center;
@@ -16,12 +23,12 @@
   margin-top: 8px;
 }
 
-.PostingDate {
-    width: 200px;
+.showUnpaid {
+  margin-top: 8px;
 }
 
-.AccountList {
-    width: 500px;
+.PostingDate {
+    width: 300px;
 }
 
 .dx-fieldset {
@@ -35,8 +42,8 @@
   overflow-x: auto;
   width: 100%;
   min-width: max-content;
-  margin-top: 70px;
-  height: calc(100vh - 140px); /* Full height minus the top offset */
+  margin-top: 25px;
+  height: calc(100vh - 120px); /* Full height minus the top offset */
 }
 
 .spinner {
@@ -51,7 +58,6 @@
   height: 40px;
   animation: spin 1s linear infinite;
 }
-
 
 @keyframes spin {
   0% { transform: rotate(0deg); }

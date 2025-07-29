@@ -1,35 +1,31 @@
 <div class="dx-fieldset">
-  <div class="dx-field">
-    <div class="PostingDate">
-      <dx-date-box
-        [showClearButton]="true"
-        [inputAttr]="{ 'aria-label': 'Posting Date' }"
-        label="Posting Date"
-        labelMode="floating"
-        placeholder="Choose date"
-        displayFormat="yyyy/MM/dd"
-        type="date"
-        [(value)]="endDate"
-        (onValueChanged)="FetchLedgerLines()">
-      </dx-date-box>
-
-      <div id="AccountList" class="AccountList">
-        <dx-text-box
+  <div class="header-container">
+    <h2 class="page-header">Bank account ledger</h2>
+    <div class="dx-field">
+      <div class="filter-container">
+        <dx-date-box
           [showClearButton]="true"
-          [inputAttr]="{ 'aria-label': 'Account' }"
-          label="Extra Accounts"
+          [inputAttr]="{ 'aria-label': 'Posting Date' }"
+          label="Posting Date"
           labelMode="floating"
-          placeholder=""
-          [(value)]="accountsText"
-          (onValueChanged)="accListValueChanged($event)">
-        </dx-text-box>
-      </div>
-      <div>
-        <button
-          type="button"
-          (click)="FetchLedgerLines()">
-          Apply filters
-        </button>
+          placeholder="Choose date"
+          displayFormat="yyyy/MM/dd"
+          type="date"
+          [(value)]="endDate"
+          (onValueChanged)="FetchLedgerLines()">
+        </dx-date-box>
+
+        <div id="AccountList" class="AccountList">
+          <dx-text-box
+            [showClearButton]="true"
+            [inputAttr]="{ 'aria-label': 'Account' }"
+            label="Extra Accounts"
+            labelMode="floating"
+            placeholder=""
+            [(value)]="accountsText"
+            (onValueChanged)="accListValueChanged($event)">
+          </dx-text-box>
+        </div>
       </div>
     </div>
   </div>

@@ -1,18 +1,17 @@
 <div class="dx-fieldset">
-  <div class="dx-field">
-    <div id="dateRangeBox" class="PostingDate">
-      <dx-date-range-box
-        [min]="minDate"
-        [startDate]="startDate"
-        [endDate]="endDate"
-        startDateLabel="Posting Date Start"
-        endDateLabel="End"
-        [(value)]="currentValue"
-        (onValueChanged)="onCurrentValueChanged($event)"
-        >
-      </dx-date-range-box>
-      <div>
-        <button (click)="applyFilters()">Apply date filter</button>
+  <div class="header-container">
+    <h2 class="page-header">Customer Invoices</h2>
+    <div class="dx-field">
+      <div class="filter-container">
+        <dx-date-range-box
+          [min]="minDate"
+          [startDate]="startDate"
+          [endDate]="endDate"
+          startDateLabel="Posting Date Start"
+          endDateLabel="End"
+          [(value)]="currentValue"
+          (onValueChanged)="onCurrentValueChanged($event)">
+        </dx-date-range-box>
       </div>
     </div>
   </div>

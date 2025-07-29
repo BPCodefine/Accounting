@@ -4,19 +4,19 @@ import { CommonModule } from '@angular/common';
 import { DxDateRangeBoxModule, DxCheckBoxModule, DxDataGridModule } from 'devextreme-angular';
 import { DxDateRangeBoxTypes } from "devextreme-angular/ui/date-range-box"
 
-import { CustInvoices } from './CustInvoices.model';
-import { CustInvoiceService } from './CustInvoices.service';
+import { VendorInvoices } from './VendorInvoices.model';
+import { VendorInvoicesService } from './VendorInvoices.service';
 
 @Component({
-  selector: 'app-customer-invoices',
+  selector: 'app-vendor-invoices',
   imports: [CommonModule,
             DxDataGridModule,
             DxCheckBoxModule,
             DxDateRangeBoxModule],
-  templateUrl: './CustomerInvoices.component.html',
-  styleUrl: './CustomerInvoices.component.css'
+  templateUrl: 'VendorInvoices.component.html',
+  styleUrl: 'VendorInvoices.component.css'
 })
-export class CustomerInvoicesComponent implements OnInit, AfterViewInit {
+export class VendorInvoicesComponent implements OnInit, AfterViewInit {
   loading: boolean = true;
 
   minDate: Date = new Date(2020, 7, 1);
@@ -24,11 +24,11 @@ export class CustomerInvoicesComponent implements OnInit, AfterViewInit {
   endDate: Date = new Date();
   currentValue: [Date, Date] = [this.startDate, this.endDate];
   gridHeight: number = 0;
-  showOverdue: boolean = false;
+  showUnpaid: boolean = false;
 
-  invoices: CustInvoices[] = [];
+  invoices: VendorInvoices[] = [];
 
-  constructor(private custInvoicesService: CustInvoiceService, private cdr: ChangeDetectorRef) {}
+  constructor(private vendorInvoicesService: VendorInvoicesService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.FetchInvoices();
@@ -55,12 +55,12 @@ export class CustomerInvoicesComponent implements OnInit, AfterViewInit {
     //console.log('Current value changed:', this.currentValue);
   }
 
-  FetchInvoices() {
+  FetchInvoices(): void {
     this.loading = true;
 
-    const invoiceObservable = this.showOverdue
-      ? this.custInvoicesService.getLateCustInvoices("cdf")
-      : this.custInvoicesService.getCustInvoices(this.startDate, this.endDate, "cdf");
+    const invoiceObservable = this.showUnpaid
+      ? this.vendorInvoicesService.getUnpaidVendorInvoices(this.startDate, this.endDate, "cdf")
+      : this.vendorInvoicesService.getVendorInvoices(this.startDate, this.endDate, "cdf");
 
     invoiceObservable.subscribe({
       next: (data) => {
