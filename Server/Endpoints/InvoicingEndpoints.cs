@@ -22,6 +22,13 @@ namespace AccountingServer.Endpoints
         public DateTime FromDate { get; set; }
         public DateTime ToDate { get; set; }
     }
+    public class VendorInvQuery
+    {
+        public string Company { get; set; } = string.Empty;
+        public DateTime FromDate { get; set; }
+        public DateTime ToDate { get; set; }
+        public bool? OnlyOpen { get; set; } = false;
+    }
     public static class InvoicingEndpoints
     {
         public static void MapInvoicingEndpoints(this IEndpointRouteBuilder app)
@@ -306,7 +313,7 @@ where
             }
             );
 
-            app.MapGet("/api/VendorInvoices", async (DynamicsDBContext context, [AsParameters] CustInvQuery query) =>
+            app.MapGet("/api/VendorInvoices", async (DynamicsDBContext context, [AsParameters] VendorInvQuery query) =>
             {
                 using var conn = context.Create();
 
@@ -343,11 +350,14 @@ select
 from 
 	[dbo].[{query.Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] vle
 	left join [dbo].[{query.Company}$Vendor Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] ClosedBy on ClosedBy.[Entry No_] = vle.[Closed by Entry No_]
-	inner join [dbo].[{query.Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] vendor on vle.[Vendor No_] = vendor.[No_]
+	inner join [dbo].[{query.Company}$Vendor$437dbf0e-84ff-417a-965d-ed2bb9650972] vendor on vle.[Vendor No_] = vendor.[No_]
 where 
 	(vle.[Document Type] = 2 OR vle.[Document Type] = 3)
     AND vle.[Posting Date] BETWEEN '{query.FromDate:yyyy-MM-dd}' AND '{query.ToDate:yyyy-MM-dd}'");
 
+                if (query.OnlyOpen.HasValue && query.OnlyOpen.Value)
+                    sql.AppendLine("AND vle.[Open] = 1");
+                
                 var lines = await conn.QueryAsync<VendorInvoices>(sql.ToString());
                 return Results.Ok(lines);
             }

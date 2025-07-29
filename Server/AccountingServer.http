@@ -39,7 +39,8 @@ GET {{AccountingServer_HostAddress}}/api/CustomerInvoices?FromDate={{FromDate}}&
 @FromDate=2024-12-01
 @ToDate=2025-12-30
 @Company=CDF
-GET {{AccountingServer_HostAddress}}/api/VendorInvoices?FromDate={{FromDate}}&ToDate={{ToDate}}&Company={{Company}}
+@OnlyOpen=true
+GET {{AccountingServer_HostAddress}}/api/VendorInvoices?FromDate={{FromDate}}&ToDate={{ToDate}}&Company={{Company}}&OnlyOpen={{OnlyOpen}}
 
 ###
 @Company=CDF
