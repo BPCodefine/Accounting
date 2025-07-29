@@ -9,7 +9,6 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/", () => "Hello World!");
 app.MapGet("/api/username", (HttpContext context) =>
 {
     var username = context.User.Identity?.Name; // e.g., DOMAIN\username
