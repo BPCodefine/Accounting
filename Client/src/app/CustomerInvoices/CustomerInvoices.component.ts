@@ -6,6 +6,7 @@ import { DxDateRangeBoxTypes } from "devextreme-angular/ui/date-range-box"
 
 import { CustInvoices } from './CustInvoices.model';
 import { CustInvoiceService } from './CustInvoices.service';
+import { UserService } from '../GeneralData/WinUserName.service';
 
 @Component({
   selector: 'app-customer-invoices',
@@ -17,6 +18,7 @@ import { CustInvoiceService } from './CustInvoices.service';
   styleUrl: './CustomerInvoices.component.css'
 })
 export class CustomerInvoicesComponent implements OnInit, AfterViewInit {
+  username = '';
   loading: boolean = true;
 
   minDate: Date = new Date(2020, 7, 1);
@@ -28,9 +30,17 @@ export class CustomerInvoicesComponent implements OnInit, AfterViewInit {
 
   invoices: CustInvoices[] = [];
 
-  constructor(private custInvoicesService: CustInvoiceService, private cdr: ChangeDetectorRef) {}
+  constructor(private userService: UserService, private custInvoicesService: CustInvoiceService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
+    this.userService.getUsername().subscribe({
+      next: res => this.username = res.username,
+      error: err => {
+        console.error('Failed to get username:', err);
+        this.username = 'Unknown';
+      }
+    });
+
     this.FetchInvoices();
   }
 

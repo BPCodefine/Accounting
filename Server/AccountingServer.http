@@ -1,9 +1,5 @@
 @AccountingServer_HostAddress = https://localhost:7098
 
-GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses
-
-###
-
 @DateFrom=2024-12-01
 @DateTo=2024-12-30
 GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses/betweenDates?DateFrom={{DateFrom}}&DateTo={{DateTo}}
@@ -12,14 +8,6 @@ GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses/betweenDates?DateFr
 
 @invNo=PI00000930
 GET {{AccountingServer_HostAddress}}/api/PurchInvAndExpenses/{{invNo}}
-
-###
-
-GET {{AccountingServer_HostAddress}}/
-
-###
-
-GET {{AccountingServer_HostAddress}}/api/Vendors
 
 ###
 
@@ -48,6 +36,6 @@ GET {{AccountingServer_HostAddress}}/api/LateCustomerInvoices?Company={{Company}
 
 ###
 
-GET {{AccountingServer_HostAddress}}/username
+GET {{AccountingServer_HostAddress}}/api/username
 
 ###

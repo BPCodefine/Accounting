@@ -1,15 +1,9 @@
 using AccountingServer.DBAccess;
 using AccountingServer.Endpoints;
-using Microsoft.AspNetCore.Server.IISIntegration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-//builder.Logging.ClearProviders();
-
-// Conditionally add EventLog logging only on Windows platforms
 if (OperatingSystem.IsWindows())
 {
     builder.Logging.AddEventLog();
@@ -25,6 +19,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
 app.UseDefaultFiles();
 app.MapStaticAssets();
 
@@ -34,7 +29,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 app.MapInvoicingEndpoints();
-app.MapGeneralEndpoints();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
+
 app.Run();
