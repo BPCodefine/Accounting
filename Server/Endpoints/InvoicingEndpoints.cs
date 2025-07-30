@@ -362,6 +362,91 @@ where
                 return Results.Ok(lines);
             }
             );
+
+            app.MapGet("/api/GetEnabledComps", async (DynamicsDBContext context, string UserName) =>
+            {
+                using var conn = context.Create();
+                string sql = $"select [AccessTo] from [SatV2].[Webpages].[WebUserRights] where [UserName] = '{UserName}'";
+                var lines = await conn.QueryAsync<string>(sql);
+                return Results.Ok(lines);
+            });
+
+            app.MapGet("/api/CustAgedInvoices", async(DynamicsDBContext context, string Company) =>
+            {
+                using var conn = context.Create();
+
+                string DefCurSQL = $"select [LCY Code] from [{Company}$General Ledger Setup$437dbf0e-84ff-417a-965d-ed2bb9650972]";
+                string? DefCur = conn.ExecuteScalar<string>(DefCurSQL);
+                if (DefCur == null)
+                {
+                    return Results.Problem($"Default currency for {Company} could not be retrieved.", statusCode: 500);
+                }
+
+                StringBuilder sql = new($@"
+WITH EntryDetails AS (
+    SELECT
+        cle.[Entry No_] AS EntryNo,
+        cle.[Document No_] AS InvoiceNo,
+        cle.[Customer No_] AS CustomerNo,
+        cust.[Name] AS CustomerName,
+        CAST(cle.[Posting Date] AS DATE) AS InvoiceDate,
+        cle.[Description] AS Descr,
+        CAST(cle.[Due Date] AS DATE) AS DueDate,
+        CASE cle.[Currency Code]
+            WHEN '' THEN '{DefCur}'
+            ELSE cle.[Currency Code]
+        END AS Cur,
+        DATEDIFF(DAY, cle.[Due Date], GETDATE()) AS LateDays,
+        (
+            SELECT SUM(Amount)
+            FROM [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] dcle
+            WHERE dcle.[Entry Type] = 1
+              AND dcle.[Cust_ Ledger Entry No_] = cle.[Entry No_]
+              AND dcle.[Posting Date] = cle.[Posting Date]
+        ) AS Amount,
+
+        (
+            SELECT SUM([Amount (LCY)])
+            FROM [{Company}$Detailed Cust_ Ledg_ Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] dcle
+            WHERE dcle.[Entry Type] = 1
+              AND dcle.[Cust_ Ledger Entry No_] = cle.[Entry No_]
+              AND dcle.[Posting Date] = cle.[Posting Date]
+        ) AS AmountLCY
+
+    FROM
+        [{Company}$Cust_ Ledger Entry$437dbf0e-84ff-417a-965d-ed2bb9650972] cle
+        INNER JOIN [{Company}$Customer$437dbf0e-84ff-417a-965d-ed2bb9650972] cust
+            ON cle.[Customer No_] = cust.[No_]
+    WHERE
+        cle.[Open] = 1
+        AND cle.[Document Type] IN (2, 3)
+)
+
+SELECT
+    InvoiceNo,
+    CustomerNo,
+    CustomerName,
+    InvoiceDate,
+    Descr,
+    DueDate,
+    Cur,
+    LateDays,
+
+    CASE WHEN LateDays < 30 THEN Amount ELSE NULL END AS [Acc30],
+    CASE WHEN LateDays BETWEEN 30 AND 60 THEN Amount ELSE NULL END AS [Acc3060],
+    CASE WHEN LateDays BETWEEN 61 AND 90 THEN Amount ELSE NULL END AS [Acc6090],
+	CASE WHEN LateDays > 90 THEN Amount ELSE NULL END AS [Acc90],
+
+	CASE WHEN LateDays < 30 THEN AmountLCY ELSE NULL END AS [LCY30],
+    CASE WHEN LateDays BETWEEN 30 AND 60 THEN AmountLCY ELSE NULL END AS [LCY3060],
+    CASE WHEN LateDays BETWEEN 61 AND 90 THEN AmountLCY ELSE NULL END AS [LCY6090],
+	CASE WHEN LateDays > 90 THEN AmountLCY ELSE NULL END AS [LCY90]
+FROM EntryDetails");
+
+                var lines = await conn.QueryAsync<CustAgedInvoices>(sql.ToString());
+                return Results.Ok(lines);
+            }
+            );
         }
     }
 }

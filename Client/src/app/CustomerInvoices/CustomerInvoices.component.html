@@ -3,6 +3,14 @@
     <h2 class="page-header">Customer Invoices</h2>
     <div class="dx-field">
       <div class="filter-container">
+        <dx-select-box
+          [items]="enabledComps"
+          [(value)]="selectedComp"
+          placeholder="Select a company"
+          [searchEnabled]="true"
+          (onValueChanged)="FetchInvoices()">
+        </dx-select-box>
+
         <dx-date-range-box
           [min]="minDate"
           [startDate]="startDate"

@@ -11,5 +11,6 @@ export const routes: Routes = [
     { path: 'InvExpenses', component: InvExpensesComponent },
     { path: 'BankAccountLedger', component: BankAccountLedgerComponent},
     { path: 'CustomerInvoices', component: CustomerInvoicesComponent},
+
     { path: 'VendorInvoices', component: VendorInvoicesComponent}
 ]

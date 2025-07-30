@@ -39,3 +39,12 @@ GET {{AccountingServer_HostAddress}}/api/LateCustomerInvoices?Company={{Company}
 GET {{AccountingServer_HostAddress}}/api/username
 
 ###
+
+@UserName=CODEFINE\bp
+GET {{AccountingServer_HostAddress}}/api/GetEnabledComps?UserName={{UserName}}
+
+###
+@Company=CDF
+GET {{AccountingServer_HostAddress}}/api/CustAgedInvoices?Company={{Company}}
+
+###

@@ -1,7 +1,7 @@
 import { Component, OnInit, HostListener, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { DxDateRangeBoxModule, DxCheckBoxModule, DxDataGridModule } from 'devextreme-angular';
+import { DxSelectBoxModule, DxDateRangeBoxModule, DxCheckBoxModule, DxDataGridModule } from 'devextreme-angular';
 import { DxDateRangeBoxTypes } from "devextreme-angular/ui/date-range-box"
 
 import { CustInvoices } from './CustInvoices.model';
@@ -11,6 +11,7 @@ import { UserService } from '../GeneralData/WinUserName.service';
 @Component({
   selector: 'app-customer-invoices',
   imports: [CommonModule,
+            DxSelectBoxModule,
             DxDataGridModule,
             DxCheckBoxModule,
             DxDateRangeBoxModule],
@@ -29,19 +30,35 @@ export class CustomerInvoicesComponent implements OnInit, AfterViewInit {
   showOverdue: boolean = false;
 
   invoices: CustInvoices[] = [];
+  enabledComps: string[] = [];
+  selectedComp!: string;
 
   constructor(private userService: UserService, private custInvoicesService: CustInvoiceService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.userService.getUsername().subscribe({
-      next: res => this.username = res.username,
+      next: res => {
+        this.username = res;
+
+        this.userService.getEnabledCompanies(this.username).subscribe({
+          next: comps => {
+            this.enabledComps = comps;
+
+            if (this.enabledComps.length > 0) {
+              this.selectedComp = this.enabledComps[0];
+            }
+            this.FetchInvoices();
+          },
+          error: err => {
+            console.error('Failed to get enabled companies', err);
+          }
+        });
+      },
       error: err => {
-        console.error('Failed to get username:', err);
-        this.username = 'Unknown';
+        console.error('Failed to get username', err);
+        this.username = 'Unknown User';
       }
     });
-
-    this.FetchInvoices();
   }
 
   ngAfterViewInit() {
@@ -62,15 +79,14 @@ export class CustomerInvoicesComponent implements OnInit, AfterViewInit {
     this.startDate = e.value[0];
     this.endDate = e.value[1];
     this.FetchInvoices();
-    //console.log('Current value changed:', this.currentValue);
   }
 
   FetchInvoices() {
     this.loading = true;
 
     const invoiceObservable = this.showOverdue
-      ? this.custInvoicesService.getLateCustInvoices("cdf")
-      : this.custInvoicesService.getCustInvoices(this.startDate, this.endDate, "cdf");
+      ? this.custInvoicesService.getLateCustInvoices(this.selectedComp)
+      : this.custInvoicesService.getCustInvoices(this.startDate, this.endDate, this.selectedComp);
 
     invoiceObservable.subscribe({
       next: (data) => {

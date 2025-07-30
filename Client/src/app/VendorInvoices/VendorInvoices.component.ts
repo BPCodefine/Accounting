@@ -1,15 +1,17 @@
 import { Component, OnInit, HostListener, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { DxDateRangeBoxModule, DxCheckBoxModule, DxDataGridModule } from 'devextreme-angular';
+import { DxSelectBoxModule, DxDateRangeBoxModule, DxCheckBoxModule, DxDataGridModule } from 'devextreme-angular';
 import { DxDateRangeBoxTypes } from "devextreme-angular/ui/date-range-box"
 
 import { VendorInvoices } from './VendorInvoices.model';
 import { VendorInvoicesService } from './VendorInvoices.service';
+import { UserService } from '../GeneralData/WinUserName.service';
 
 @Component({
   selector: 'app-vendor-invoices',
   imports: [CommonModule,
+            DxSelectBoxModule,
             DxDataGridModule,
             DxCheckBoxModule,
             DxDateRangeBoxModule],
@@ -17,6 +19,7 @@ import { VendorInvoicesService } from './VendorInvoices.service';
   styleUrl: 'VendorInvoices.component.css'
 })
 export class VendorInvoicesComponent implements OnInit, AfterViewInit {
+  username = '';
   loading: boolean = true;
 
   minDate: Date = new Date(2020, 7, 1);
@@ -27,11 +30,35 @@ export class VendorInvoicesComponent implements OnInit, AfterViewInit {
   showUnpaid: boolean = false;
 
   invoices: VendorInvoices[] = [];
+  enabledComps: string[] = [];
+  selectedComp!: string;
 
-  constructor(private vendorInvoicesService: VendorInvoicesService, private cdr: ChangeDetectorRef) {}
+  constructor(private userService: UserService, private vendorInvoicesService: VendorInvoicesService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
-    this.FetchInvoices();
+    this.userService.getUsername().subscribe({
+      next: res => {
+        this.username = res;
+
+        this.userService.getEnabledCompanies(this.username).subscribe({
+          next: comps => {
+            this.enabledComps = comps;
+
+            if (this.enabledComps.length > 0) {
+              this.selectedComp = this.enabledComps[0];
+            }
+            this.FetchInvoices();
+          },
+          error: err => {
+            console.error('Failed to get enabled companies', err);
+          }
+        });
+      },
+      error: err => {
+        console.error('Failed to get username', err);
+        this.username = 'Unknown User';
+      }
+    });
   }
 
   ngAfterViewInit() {
@@ -52,15 +79,14 @@ export class VendorInvoicesComponent implements OnInit, AfterViewInit {
     this.startDate = e.value[0];
     this.endDate = e.value[1];
     this.FetchInvoices();
-    //console.log('Current value changed:', this.currentValue);
   }
 
   FetchInvoices(): void {
     this.loading = true;
 
     const invoiceObservable = this.showUnpaid
-      ? this.vendorInvoicesService.getUnpaidVendorInvoices(this.startDate, this.endDate, "cdf")
-      : this.vendorInvoicesService.getVendorInvoices(this.startDate, this.endDate, "cdf");
+      ? this.vendorInvoicesService.getUnpaidVendorInvoices(this.startDate, this.endDate, this.selectedComp)
+      : this.vendorInvoicesService.getVendorInvoices(this.startDate, this.endDate, this.selectedComp);
 
     invoiceObservable.subscribe({
       next: (data) => {
